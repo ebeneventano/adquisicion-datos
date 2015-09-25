@@ -8,9 +8,15 @@ import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.JTextField;
+import javax.swing.JProgressBar;
+
+import ar.com.untref.adquisicion.arduino.utils.GraficadorTermometro;
+
+import java.awt.Component;
 
 @SuppressWarnings("serial")
-public class VentanaPrincipal extends JFrame{
+public class VentanaPrincipal extends JFrame {
+	
 	private JLabel labelBrujula;
 	private JTextField textFieldInclinacionNorte;
 	private JLabel labelOeste;
@@ -19,6 +25,8 @@ public class VentanaPrincipal extends JFrame{
 	private JLabel labelSur;
 	private JLabel labelt;
 	private JLabel labelTemperatura;
+	private JProgressBar progressBarTemperatura;
+	private int MAXIMO_TEMPERATURA = 60;
 
 	public VentanaPrincipal() {
 		getContentPane().setLayout(null);
@@ -90,6 +98,11 @@ public class VentanaPrincipal extends JFrame{
 		labelTemperatura.setBounds(325, 58, 99, 36);
 		getContentPane().add(labelTemperatura);
 		
+		progressBarTemperatura = new JProgressBar(0, MAXIMO_TEMPERATURA);
+		progressBarTemperatura.setValue(0);
+		progressBarTemperatura.setBounds(335, 105, 89, 14);
+		getContentPane().add(progressBarTemperatura);
+		
 		tomarMedidas();
 	}
 
@@ -152,6 +165,8 @@ public class VentanaPrincipal extends JFrame{
 
 	void actualizarDatosTemperatura(Double temperatura) {
 
+		progressBarTemperatura.setForeground(GraficadorTermometro.getColorTermometro(temperatura, MAXIMO_TEMPERATURA));
+		progressBarTemperatura.setValue(temperatura.intValue());
 		labelTemperatura.setText(temperatura.toString());
 	}
 }
