@@ -17,6 +17,8 @@ public class VentanaPrincipal extends JFrame{
 	private JLabel labelEste;
 	private JLabel labelNorte;
 	private JLabel labelSur;
+	private JLabel labelt;
+	private JLabel labelTemperatura;
 
 	public VentanaPrincipal() {
 		getContentPane().setLayout(null);
@@ -73,6 +75,20 @@ public class VentanaPrincipal extends JFrame{
 		labelNorte.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		labelNorte.setBounds(40, 145, 31, 26);
 		getContentPane().add(labelNorte);
+		
+		labelt = new JLabel("Temperatura");
+		labelt.setHorizontalAlignment(SwingConstants.CENTER);
+		labelt.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		labelt.setBackground(Color.WHITE);
+		labelt.setBounds(325, 11, 99, 36);
+		getContentPane().add(labelt);
+		
+		labelTemperatura = new JLabel("");
+		labelTemperatura.setHorizontalAlignment(SwingConstants.CENTER);
+		labelTemperatura.setFont(new Font("Tahoma", Font.BOLD, 16));
+		labelTemperatura.setBackground(Color.WHITE);
+		labelTemperatura.setBounds(325, 58, 99, 36);
+		getContentPane().add(labelTemperatura);
 		
 		tomarMedidas();
 	}
@@ -132,5 +148,10 @@ public class VentanaPrincipal extends JFrame{
 		}
 		
 		labelBrujula.setText(angulo.toString());
+	}
+
+	void actualizarDatosTemperatura(Double temperatura) {
+
+		labelTemperatura.setText(temperatura.toString());
 	}
 }

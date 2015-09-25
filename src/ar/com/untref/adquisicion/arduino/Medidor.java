@@ -20,6 +20,7 @@ public class Medidor implements SerialPortEventListener {
 	};
 
 	private Double MARGEN_ERROR_INCLINACION = 3.0;
+	private Double MARGEN_ERROR_TEMPERATURA = 1.0;
 	private Lectura lecturaAnterior = new Lectura();
 
 	/**
@@ -141,7 +142,13 @@ public class Medidor implements SerialPortEventListener {
 			lecturaActual.setInclinacion(lecturaAnterior.getInclinacion());
 		}
 		
+		if (Math.abs(temperatura - lecturaAnterior.getTemperatura()) < MARGEN_ERROR_TEMPERATURA) {
+
+			lecturaActual.setTemperatura(lecturaAnterior.getTemperatura());
+		}
+		
 		ventanaPrincipal.actualizarDatosBrujula(lecturaActual.getInclinacion());
+		ventanaPrincipal.actualizarDatosTemperatura(lecturaActual.getTemperatura());
 
 		lecturaAnterior = lecturaActual;
 	}
