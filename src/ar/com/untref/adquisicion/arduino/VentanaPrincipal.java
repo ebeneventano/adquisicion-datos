@@ -12,8 +12,6 @@ import javax.swing.JProgressBar;
 
 import ar.com.untref.adquisicion.arduino.utils.GraficadorTermometro;
 
-import java.awt.Component;
-
 @SuppressWarnings("serial")
 public class VentanaPrincipal extends JFrame {
 	
@@ -29,7 +27,9 @@ public class VentanaPrincipal extends JFrame {
 	private int MAXIMO_TEMPERATURA = 60;
 
 	public VentanaPrincipal() {
+		
 		getContentPane().setLayout(null);
+		setTitle("Sistema de Control");
 		
 		JLabel brujula = new JLabel("Br\u00FAjula");
 		brujula.setBackground(Color.WHITE);
