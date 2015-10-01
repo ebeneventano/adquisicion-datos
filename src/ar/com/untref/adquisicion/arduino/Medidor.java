@@ -124,14 +124,24 @@ public class Medidor implements SerialPortEventListener {
 
 		Double inclinacion = new Double(parametros[0]);
 		Integer error = new Integer(parametros[1]);
-		Double aceleracionX = new Double(parametros[2]);
-		Double aceleracionY = new Double(parametros[3]);
-		Double aceleracionZ = new Double(parametros[4]);
+		Double aceleracionX = obtenerAceleracionReal(parametros);
+		Double aceleracionY = new Double(parametros[3])/ 16384;
+		Double aceleracionZ = new Double(parametros[4])/ 16384;
 		Double temperatura = new Double(parametros[5]);
 		Double giroX = new Double(parametros[6]);
 		Double giroY = new Double(parametros[7]);
 		Double giroZ = new Double(parametros[8]);
-
+		
+		Double anguloY = Math.toDegrees(Math.atan(aceleracionX/(Math.sqrt(((aceleracionY * aceleracionY) + 
+				(aceleracionZ * aceleracionZ))))));
+		
+		System.out.println("angulo Y = " + anguloY);
+		
+		Double anguloX = Math.toDegrees(Math.atan(aceleracionY/(Math.sqrt(((aceleracionX * aceleracionX) + 
+				(aceleracionZ * aceleracionZ))))));
+		
+		System.out.println("angulo X  = " + anguloX);
+		 
 		Lectura lecturaActual = new Lectura(inclinacion, error, aceleracionX,
 				aceleracionY, aceleracionZ, temperatura, giroX, giroY, giroZ);
 
@@ -151,6 +161,10 @@ public class Medidor implements SerialPortEventListener {
 		ventanaPrincipal.actualizarDatosTemperatura(lecturaActual.getTemperatura());
 
 		lecturaAnterior = lecturaActual;
+	}
+
+	private double obtenerAceleracionReal(String[] parametros) {
+		return new Double(parametros[2])/ 16384;
 	}
 
 	public void iniciar() throws Exception {
