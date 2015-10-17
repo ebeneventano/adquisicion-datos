@@ -5,11 +5,12 @@ import java.awt.Font;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
-import javax.swing.JTextField;
-import javax.swing.JProgressBar;
 
+import ar.com.untref.adquisicion.arduino.entidades.Punto3D;
 import ar.com.untref.adquisicion.arduino.utils.GraficadorTermometro;
 
 @SuppressWarnings("serial")
@@ -25,6 +26,9 @@ public class VentanaPrincipal extends JFrame {
 	private JLabel labelTemperatura;
 	private JProgressBar progressBarTemperatura;
 	private int MAXIMO_TEMPERATURA = 60;
+	private JTextField textFieldX;
+	private JTextField textFieldY;
+	private JTextField textFieldZ;
 
 	public VentanaPrincipal() {
 		
@@ -103,6 +107,30 @@ public class VentanaPrincipal extends JFrame {
 		progressBarTemperatura.setBounds(335, 105, 89, 14);
 		getContentPane().add(progressBarTemperatura);
 		
+		textFieldX = new JTextField();
+		textFieldX.setText("0");
+		textFieldX.setHorizontalAlignment(SwingConstants.CENTER);
+		textFieldX.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		textFieldX.setColumns(10);
+		textFieldX.setBounds(131, 192, 83, 36);
+		getContentPane().add(textFieldX);
+		
+		textFieldY = new JTextField();
+		textFieldY.setText("0");
+		textFieldY.setHorizontalAlignment(SwingConstants.CENTER);
+		textFieldY.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		textFieldY.setColumns(10);
+		textFieldY.setBounds(232, 192, 83, 36);
+		getContentPane().add(textFieldY);
+		
+		textFieldZ = new JTextField();
+		textFieldZ.setText("0");
+		textFieldZ.setHorizontalAlignment(SwingConstants.CENTER);
+		textFieldZ.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		textFieldZ.setColumns(10);
+		textFieldZ.setBounds(335, 192, 83, 36);
+		getContentPane().add(textFieldZ);
+		
 		tomarMedidas();
 	}
 
@@ -164,9 +192,14 @@ public class VentanaPrincipal extends JFrame {
 	}
 
 	void actualizarDatosTemperatura(Double temperatura) {
-
 		progressBarTemperatura.setForeground(GraficadorTermometro.getColorTermometro(temperatura, MAXIMO_TEMPERATURA));
 		progressBarTemperatura.setValue(temperatura.intValue());
 		labelTemperatura.setText(temperatura.toString());
+	}
+	
+	public void actualizarDatosPosicion(Punto3D posicion){
+		textFieldX.setText(posicion.getX().toString());
+		textFieldY.setText(posicion.getY().toString());
+		textFieldZ.setText(posicion.getZ().toString());
 	}
 }

@@ -11,6 +11,8 @@ import javax.comm.SerialPortEvent;
 import javax.comm.SerialPortEventListener;
 
 import ar.com.untref.adquisicion.arduino.entidades.Lectura;
+import ar.com.untref.adquisicion.arduino.entidades.Medicion;
+import ar.com.untref.adquisicion.arduino.entidades.Punto3D;
 
 public class Medidor implements SerialPortEventListener {
 
@@ -21,7 +23,16 @@ public class Medidor implements SerialPortEventListener {
 
 	private Double MARGEN_ERROR_INCLINACION = 3.0;
 	private Double MARGEN_ERROR_TEMPERATURA = 1.0;
+	
+	private final Double SEGUNDOS_ENTRE_MEDICIONES = 1.0;
+	private Double MARGEN_ERROR_ACELERACION = 0.05;
+	
 	private Lectura lecturaAnterior = new Lectura();
+	
+	private Medicion medicionAnterior;
+	private boolean hayCambioEnAceleracionX;
+	private boolean hayCambioEnAceleracionY;
+	private boolean hayCambioEnAceleracionZ;
 
 	/**
 	 * A BufferedReader which will be fed by a InputStreamReader converting the
@@ -119,6 +130,10 @@ public class Medidor implements SerialPortEventListener {
 	}
 
 	private void leerDatos(String inputLine) {
+		
+		hayCambioEnAceleracionX = true;
+		hayCambioEnAceleracionY = true;
+		hayCambioEnAceleracionZ = true;
 
 		String[] parametros = inputLine.split("\\|");
 
@@ -157,10 +172,32 @@ public class Medidor implements SerialPortEventListener {
 			lecturaActual.setTemperatura(lecturaAnterior.getTemperatura());
 		}
 		
+		if (Math.abs(aceleracionX - lecturaAnterior.getAceleracionX()) < MARGEN_ERROR_ACELERACION) {
+
+			hayCambioEnAceleracionX = false;
+			lecturaActual.setAceleracionX(lecturaAnterior.getAceleracionX());
+		}
+
+		if (Math.abs(aceleracionY - lecturaAnterior.getAceleracionY()) < MARGEN_ERROR_ACELERACION) {
+
+			hayCambioEnAceleracionY = false;
+			lecturaActual.setAceleracionY(lecturaAnterior.getAceleracionY());
+		}
+		
+		if (Math.abs(aceleracionZ - lecturaAnterior.getAceleracionZ()) < MARGEN_ERROR_ACELERACION) {
+
+			hayCambioEnAceleracionZ = false;
+			lecturaActual.setAceleracionZ(lecturaAnterior.getAceleracionZ());
+		}
+		
+		Medicion medicionActual = obtenerMedicion(lecturaActual);
+		
 		ventanaPrincipal.actualizarDatosBrujula(lecturaActual.getInclinacion());
 		ventanaPrincipal.actualizarDatosTemperatura(lecturaActual.getTemperatura());
+		ventanaPrincipal.actualizarDatosPosicion(medicionActual.getPosicion());
 
 		lecturaAnterior = lecturaActual;
+		medicionAnterior = medicionActual;
 	}
 
 	private double obtenerAceleracionReal(String[] parametros) {
@@ -183,5 +220,51 @@ public class Medidor implements SerialPortEventListener {
 		};
 		t.start();
 		System.out.println("Started");
+	}
+	
+
+	private Medicion obtenerMedicion(Lectura lectura) {
+
+		Medicion medicionActual = new Medicion(new Punto3D(), new Punto3D());
+
+		if (medicionAnterior != null) {
+
+			medicionActual = calcularMedicion(medicionAnterior, lectura);
+		}
+
+		return medicionActual;
+	}
+
+	private Medicion calcularMedicion(Medicion medicionAnterior,
+			Lectura lecturaActual) {
+
+		Double velocidadActualX = medicionAnterior.getVelocidad().getX();
+		Double posicionActualX = medicionAnterior.getPosicion().getX();
+		
+		Double velocidadActualY = medicionAnterior.getVelocidad().getY();
+		Double posicionActualY = medicionAnterior.getPosicion().getY();
+		
+		Double velocidadActualZ = medicionAnterior.getVelocidad().getZ();
+		Double posicionActualZ = medicionAnterior.getPosicion().getZ();
+		
+		if ( hayCambioEnAceleracionX ){
+			velocidadActualX += lecturaActual.getAceleracionX() * 0.1 * SEGUNDOS_ENTRE_MEDICIONES;
+			posicionActualX += velocidadActualX * SEGUNDOS_ENTRE_MEDICIONES;
+		}
+		
+		if ( hayCambioEnAceleracionY ){
+			velocidadActualY += lecturaActual.getAceleracionY() * 0.1 * SEGUNDOS_ENTRE_MEDICIONES;
+			posicionActualY += velocidadActualY * SEGUNDOS_ENTRE_MEDICIONES;
+		}
+		
+		if ( hayCambioEnAceleracionZ ){
+			velocidadActualZ += lecturaActual.getAceleracionZ()* 0.1 * SEGUNDOS_ENTRE_MEDICIONES;
+			posicionActualZ += velocidadActualZ * SEGUNDOS_ENTRE_MEDICIONES;
+		}
+
+		Punto3D posicionActual = new Punto3D(posicionActualX, posicionActualY, posicionActualZ);
+		Punto3D velocidadActual = new Punto3D(velocidadActualX, velocidadActualY, velocidadActualZ);
+		
+		return new Medicion( posicionActual, velocidadActual);
 	}
 }
