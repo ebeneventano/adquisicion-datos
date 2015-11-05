@@ -151,18 +151,18 @@ public class Medidor implements SerialPortEventListener {
 				.toDegrees(Math.atan(aceleracionX
 						/ (Math.sqrt(((aceleracionY * aceleracionY) + (aceleracionZ * aceleracionZ))))));
 
-		System.out.println("angulo Y = " + anguloY);
+//		System.out.println("angulo Y = " + anguloY);
 
 		Double anguloX = Math
 				.toDegrees(Math.atan(aceleracionY
 						/ (Math.sqrt(((aceleracionX * aceleracionX) + (aceleracionZ * aceleracionZ))))));
 
-		System.out.println("angulo X  = " + anguloX);
+//		System.out.println("angulo X  = " + anguloX);
 
 		Lectura lecturaActual = new Lectura(inclinacion, error, aceleracionX,
 				aceleracionY, aceleracionZ, temperatura, giroX, giroY, giroZ);
 
-		System.out.println(lecturaActual);
+//		System.out.println(lecturaActual);
 
 		if (Math.abs(inclinacion - lecturaAnterior.getInclinacion()) < MARGEN_ERROR_INCLINACION) {
 
@@ -240,21 +240,23 @@ public class Medidor implements SerialPortEventListener {
 	private Medicion calcularMedicion(Medicion medicionAnterior,
 			Lectura lecturaActual) {
 
-		Double velocidadActualX = medicionAnterior.getVelocidad().getX();
-		Double posicionActualX = medicionAnterior.getPosicion().getX();
+		Double velocidadAnteriorX = medicionAnterior.getVelocidad().getX();
+		Double posicionAnteriorX = medicionAnterior.getPosicion().getX();
 
-		Double velocidadActualY = medicionAnterior.getVelocidad().getY();
-		Double posicionActualY = medicionAnterior.getPosicion().getY();
+		Double velocidadAnteriorY = medicionAnterior.getVelocidad().getY();
+		Double posicionAnteriorY = medicionAnterior.getPosicion().getY();
 
-		Double velocidadActualZ = medicionAnterior.getVelocidad().getZ();
-		Double posicionActualZ = medicionAnterior.getPosicion().getZ();
+		Double velocidadAnteriorZ = medicionAnterior.getVelocidad().getZ();
+		Double posicionAnteriorZ = medicionAnterior.getPosicion().getZ();
+		
+		Double posicionActualX = posicionAnteriorX;
+		Double velocidadActualX = 0D;
 
 		if (hayCambioEnAceleracionX && lecturaActual.getAceleracionX() > 1.0D) {
-			velocidadActualX = 0D;
-			posicionActualX = 0D;
-			velocidadActualX += lecturaActual.getAceleracionX() * 1000
+			
+			velocidadActualX = velocidadAnteriorX + lecturaActual.getAceleracionX() * 1000
 					* SEGUNDOS_ENTRE_MEDICIONES;
-			posicionActualX += velocidadActualX * SEGUNDOS_ENTRE_MEDICIONES
+			posicionActualX = posicionAnteriorX + velocidadActualX * SEGUNDOS_ENTRE_MEDICIONES
 					+ (lecturaActual.getAceleracionX() / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
 
@@ -264,37 +266,37 @@ public class Medidor implements SerialPortEventListener {
 		}
 
 		if (hayCambioEnAceleracionY && lecturaActual.getAceleracionY() > 1.0D) {
-			velocidadActualY = 0D;
-			posicionActualY = 0D;
-			velocidadActualY += lecturaActual.getAceleracionY() * 1000
+			velocidadAnteriorY = 0D;
+			posicionAnteriorY = 0D;
+			velocidadAnteriorY += lecturaActual.getAceleracionY() * 1000
 					* SEGUNDOS_ENTRE_MEDICIONES;
-			posicionActualY += velocidadActualY * SEGUNDOS_ENTRE_MEDICIONES
+			posicionAnteriorY += velocidadAnteriorY * SEGUNDOS_ENTRE_MEDICIONES
 					+ (lecturaActual.getAceleracionY() / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
 
-			System.out.println("velocidad Y: " + velocidadActualY);
-			System.out.println("aceleracion Y: " + lecturaActual.getAceleracionY());
-			System.out.println("pos actual Y: " + posicionActualY);
+//			System.out.println("velocidad Y: " + velocidadAnteriorY);
+//			System.out.println("aceleracion Y: " + lecturaActual.getAceleracionY());
+//			System.out.println("pos actual Y: " + posicionAnteriorY);
 		}
 
 		if (hayCambioEnAceleracionZ && lecturaActual.getAceleracionZ() > 1.0D) {
-			velocidadActualZ = 0D;
-			posicionActualZ = 0D;
-			velocidadActualZ += lecturaActual.getAceleracionZ() * 1000
+			velocidadAnteriorZ = 0D;
+			posicionAnteriorZ = 0D;
+			velocidadAnteriorZ += lecturaActual.getAceleracionZ() * 1000
 					* SEGUNDOS_ENTRE_MEDICIONES;
-			posicionActualZ += velocidadActualZ * SEGUNDOS_ENTRE_MEDICIONES
+			posicionAnteriorZ += velocidadAnteriorZ * SEGUNDOS_ENTRE_MEDICIONES
 					+ (lecturaActual.getAceleracionZ() / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
 
-			System.out.println("velocidad Z: " + velocidadActualZ);
-			System.out.println("aceleracion Z: " + lecturaActual.getAceleracionZ());
-			System.out.println("pos actual Z: " + posicionActualZ);
+//			System.out.println("velocidad Z: " + velocidadAnteriorZ);
+//			System.out.println("aceleracion Z: " + lecturaActual.getAceleracionZ());
+//			System.out.println("pos actual Z: " + posicionAnteriorZ);
 		}
 
-		Punto3D posicionActual = new Punto3D(posicionActualX, posicionActualY,
-				posicionActualZ);
+		Punto3D posicionActual = new Punto3D(posicionActualX, posicionAnteriorY,
+				posicionAnteriorZ);
 		Punto3D velocidadActual = new Punto3D(velocidadActualX,
-				velocidadActualY, velocidadActualZ);
+				velocidadAnteriorY, velocidadAnteriorZ);
 
 		return new Medicion(posicionActual, velocidadActual);
 	}
