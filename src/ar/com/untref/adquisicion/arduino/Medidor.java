@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class Medidor implements SerialPortEventListener {
 	private Double MARGEN_ERROR_INCLINACION = 3.0;
 	private Double MARGEN_ERROR_TEMPERATURA = 1.0;
 
-	private final Double SEGUNDOS_ENTRE_MEDICIONES = 0.1;
+	private final Double SEGUNDOS_ENTRE_MEDICIONES = 0.5;
 
 	private Double MARGEN_ERROR_ACELERACION_X;
 	private Double MARGEN_ERROR_ACELERACION_Y;
@@ -59,7 +60,9 @@ public class Medidor implements SerialPortEventListener {
 	private static final int TIME_OUT = 2000;
 	/** Default bits per second for COM port. */
 	private static final int DATA_RATE = 9600;
-
+	
+	private List<Lectura> bufferLecturas = new ArrayList<Lectura>();
+	
 	public Medidor(VentanaPrincipal ventanaPrincipal) {
 
 		this.ventanaPrincipal = ventanaPrincipal;
@@ -139,8 +142,6 @@ public class Medidor implements SerialPortEventListener {
 				e.printStackTrace();
 			}
 		}
-		// Ignore all the other eventTypes, but you should consider the other
-		// ones.
 	}
 
 	private void leerDatos(String inputLine) {
@@ -160,7 +161,7 @@ public class Medidor implements SerialPortEventListener {
 		Lectura lecturaActual = new Lectura(inclinacion, error, aceleracionX,
 				aceleracionY, aceleracionZ, temperatura, giroX, giroY, giroZ);
 
-		System.out.println(lecturaActual);
+//		System.out.println(lecturaActual);
 
 		if ( lecturaActual.getError() == 0 ){
 			
@@ -176,6 +177,7 @@ public class Medidor implements SerialPortEventListener {
 			} else if (!estaCalibrado) {
 
 				System.out.println("Calibrando....");
+				
 				// Ordeno los valores y me quedo con los extremos
 				Collections.sort(valoresDeCalibracionAceleracionX);
 				Collections.sort(valoresDeCalibracionAceleracionY);
@@ -237,18 +239,39 @@ public class Medidor implements SerialPortEventListener {
 
 			if (estaCalibrado) {
 				
-				Medicion medicionActual = obtenerMedicion(lecturaActual);
-
-				ventanaPrincipal.actualizarDatosBrujula(lecturaActual.getInclinacion());
-				ventanaPrincipal.actualizarDatosTemperatura(lecturaActual
-						.getTemperatura());
-				ventanaPrincipal.actualizarDatosPosicion(medicionActual.getPosicion());
-
-				lecturaAnterior = lecturaActual;
-				medicionAnterior = medicionActual;
+				if(bufferLecturas.size() < 5){
+					bufferLecturas.add(lecturaActual);
+				} else {
+					lecturaActual = obtenerLecturaEficaz();
+				
+					Medicion medicionActual = obtenerMedicion(lecturaActual);
+					
+					ventanaPrincipal.actualizarDatosBrujula(lecturaActual.getInclinacion());
+					ventanaPrincipal.actualizarDatosTemperatura(lecturaActual
+							.getTemperatura());
+					ventanaPrincipal.actualizarDatosPosicion(medicionActual.getPosicion());
+	
+					lecturaAnterior = lecturaActual;
+					medicionAnterior = medicionActual;
+	
+					bufferLecturas.clear();
+				}
 			}
 		}
 		
+	}
+
+	private Lectura obtenerLecturaEficaz() {
+		Collections.sort(bufferLecturas, new AceleracionXComparator());
+		Lectura lecturaEficaz = bufferLecturas.get(2);
+		
+		Collections.sort(bufferLecturas, new AceleracionYComparator());
+		lecturaEficaz.setAceleracionY(bufferLecturas.get(2).getAceleracionY());
+		
+		Collections.sort(bufferLecturas, new AceleracionZComparator());
+		lecturaEficaz.setAceleracionZ(bufferLecturas.get(2).getAceleracionZ());
+		
+		return lecturaEficaz;
 	}
 
 	private double obtenerAceleracionReal(String parametro) {
@@ -377,4 +400,28 @@ public class Medidor implements SerialPortEventListener {
 
 		return new Medicion(posicionActual, velocidadActual, aceleracionActual);
 	}
+	
+public class AceleracionXComparator implements Comparator<Lectura> {
+
+	public int compare(Lectura lectura1, Lectura lectura2) {
+		return lectura1.getAceleracionX().compareTo(lectura2.getAceleracionX());
+	}
+	
+}
+
+public class AceleracionYComparator implements Comparator<Lectura> {
+
+	public int compare(Lectura lectura1, Lectura lectura2) {
+		return lectura1.getAceleracionY().compareTo(lectura2.getAceleracionY());
+	}
+	
+}
+
+public class AceleracionZComparator implements Comparator<Lectura> {
+
+	public int compare(Lectura lectura1, Lectura lectura2) {
+		return lectura1.getAceleracionZ().compareTo(lectura2.getAceleracionZ());
+	}
+	
+}
 }
