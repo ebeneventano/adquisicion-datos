@@ -139,9 +139,9 @@ public class Medidor implements SerialPortEventListener {
 
 		Double inclinacion = new Double(parametros[0]);
 		Integer error = new Integer(parametros[1]);
-		Double aceleracionX = obtenerAceleracionReal(parametros);
-		Double aceleracionY = new Double(parametros[3]) / 16384;
-		Double aceleracionZ = new Double(parametros[4]) / 16384;
+		Double aceleracionX = obtenerAceleracionReal(parametros[2]);
+		Double aceleracionY = obtenerAceleracionReal(parametros[3]);
+		Double aceleracionZ = obtenerAceleracionReal(parametros[4]);
 		Double temperatura = new Double(parametros[5]);
 		Double giroX = new Double(parametros[6]);
 		Double giroY = new Double(parametros[7]);
@@ -203,8 +203,8 @@ public class Medidor implements SerialPortEventListener {
 		medicionAnterior = medicionActual;
 	}
 
-	private double obtenerAceleracionReal(String[] parametros) {
-		return new Double(parametros[2]) / 16384;
+	private double obtenerAceleracionReal(String parametro) {
+		return new Double(parametro) / 16384;
 	}
 
 	public void iniciar() throws Exception {
@@ -249,15 +249,21 @@ public class Medidor implements SerialPortEventListener {
 		Double velocidadActualZ = medicionAnterior.getVelocidad().getZ();
 		Double posicionActualZ = medicionAnterior.getPosicion().getZ();
 
-		if (hayCambioEnAceleracionX) {
-			velocidadActualX += lecturaActual.getAceleracionX() * 0.1
+		if (hayCambioEnAceleracionX && lecturaActual.getAceleracionX() > 1.0D) {
+			velocidadActualX = 0D;
+			posicionActualX = 0D;
+			velocidadActualX += lecturaActual.getAceleracionX() * 1000
 					* SEGUNDOS_ENTRE_MEDICIONES;
 			posicionActualX += velocidadActualX * SEGUNDOS_ENTRE_MEDICIONES
 					+ (lecturaActual.getAceleracionX() / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
+
+			System.out.println("velocidad X: " + velocidadActualX);
+			System.out.println("aceleracion X: " + lecturaActual.getAceleracionX());
+			System.out.println("pos actual X: " + posicionActualX);
 		}
 
-		if (hayCambioEnAceleracionY&& lecturaActual.getAceleracionY() > 1.0D) {
+		if (hayCambioEnAceleracionY && lecturaActual.getAceleracionY() > 1.0D) {
 			velocidadActualY = 0D;
 			posicionActualY = 0D;
 			velocidadActualY += lecturaActual.getAceleracionY() * 1000
@@ -266,19 +272,23 @@ public class Medidor implements SerialPortEventListener {
 					+ (lecturaActual.getAceleracionY() / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
 
-			if (lecturaActual.getAceleracionY() > 1.0D) {
-				System.out.println("mayor" + velocidadActualY);
-				System.out.println("mayor" + lecturaActual.getAceleracionY());
-				System.out.println("pos actual" + posicionActualY);
-			}
+			System.out.println("velocidad Y: " + velocidadActualY);
+			System.out.println("aceleracion Y: " + lecturaActual.getAceleracionY());
+			System.out.println("pos actual Y: " + posicionActualY);
 		}
 
-		if (hayCambioEnAceleracionZ) {
-			velocidadActualZ += lecturaActual.getAceleracionZ() * 0.1
+		if (hayCambioEnAceleracionZ && lecturaActual.getAceleracionZ() > 1.0D) {
+			velocidadActualZ = 0D;
+			posicionActualZ = 0D;
+			velocidadActualZ += lecturaActual.getAceleracionZ() * 1000
 					* SEGUNDOS_ENTRE_MEDICIONES;
 			posicionActualZ += velocidadActualZ * SEGUNDOS_ENTRE_MEDICIONES
-					+ lecturaActual.getAceleracionZ() / 2
+					+ (lecturaActual.getAceleracionZ() / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
+
+			System.out.println("velocidad Z: " + velocidadActualZ);
+			System.out.println("aceleracion Z: " + lecturaActual.getAceleracionZ());
+			System.out.println("pos actual Z: " + posicionActualZ);
 		}
 
 		Punto3D posicionActual = new Punto3D(posicionActualX, posicionActualY,
