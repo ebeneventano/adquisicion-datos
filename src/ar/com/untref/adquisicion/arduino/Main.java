@@ -1,14 +1,13 @@
 package ar.com.untref.adquisicion.arduino;
 
-import javax.swing.JFrame;
-
 public class Main {
 
 	public static void main(String[] args) {
+		crearVentanaPrincipal();
+	}
 
-		VentanaPrincipal vp = new VentanaPrincipal();
-		vp.setVisible(true);
-		vp.setExtendedState(vp.getExtendedState() | JFrame.MAXIMIZED_BOTH);
+	private static void crearVentanaPrincipal() {
+		new VentanaPrincipal();
 	}
 
 }

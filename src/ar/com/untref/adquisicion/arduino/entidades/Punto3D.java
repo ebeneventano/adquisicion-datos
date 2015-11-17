@@ -2,7 +2,6 @@ package ar.com.untref.adquisicion.arduino.entidades;
 
 public class Punto3D {
 
-
 	private Double x = 0d;
 	private Double y = 0d;
 	private Double z = 0d;

@@ -16,6 +16,7 @@ import ar.com.untref.adquisicion.arduino.utils.GraficadorTermometro;
 @SuppressWarnings("serial")
 public class VentanaPrincipal extends JFrame {
 	
+	private static final String TITULO = "Sistema de Control";
 	private JLabel labelBrujula;
 	private JTextField textFieldInclinacionNorte;
 	private JLabel labelOeste;
@@ -31,24 +32,71 @@ public class VentanaPrincipal extends JFrame {
 	private JTextField textFieldZ;
 
 	public VentanaPrincipal() {
+		setVisible(Boolean.TRUE);
+		setExtendedState(getExtendedState() | JFrame.MAXIMIZED_BOTH);
 		
 		getContentPane().setLayout(null);
-		setTitle("Sistema de Control");
+		setTitle(TITULO);
 		
-		JLabel brujula = new JLabel("Br\u00FAjula");
-		brujula.setBackground(Color.WHITE);
-		brujula.setHorizontalAlignment(SwingConstants.CENTER);
-		brujula.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		brujula.setBounds(10, 11, 99, 36);
-		getContentPane().add(brujula);
+		this.agregarBrujula();
 		
-		labelBrujula = new JLabel("");
-		labelBrujula.setHorizontalAlignment(SwingConstants.CENTER);
-		labelBrujula.setFont(new Font("Tahoma", Font.BOLD, 16));
-		labelBrujula.setBackground(Color.WHITE);
-		labelBrujula.setBounds(10, 58, 99, 36);
-		getContentPane().add(labelBrujula);
+		this.agregarInclinacion();
 		
+		this.agregarTemperatura();
+		
+		this.agregarMovimiento();
+		
+		this.procesarSensores();
+	}
+
+	private void agregarMovimiento() {
+		textFieldX = new JTextField();
+		textFieldX.setText("0");
+		textFieldX.setHorizontalAlignment(SwingConstants.CENTER);
+		textFieldX.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		textFieldX.setColumns(10);
+		textFieldX.setBounds(131, 192, 83, 36);
+		getContentPane().add(textFieldX);
+		
+		textFieldY = new JTextField();
+		textFieldY.setText("0");
+		textFieldY.setHorizontalAlignment(SwingConstants.CENTER);
+		textFieldY.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		textFieldY.setColumns(10);
+		textFieldY.setBounds(232, 192, 83, 36);
+		getContentPane().add(textFieldY);
+		
+		textFieldZ = new JTextField();
+		textFieldZ.setText("0");
+		textFieldZ.setHorizontalAlignment(SwingConstants.CENTER);
+		textFieldZ.setFont(new Font("Tahoma", Font.PLAIN, 13));
+		textFieldZ.setColumns(10);
+		textFieldZ.setBounds(335, 192, 83, 36);
+		getContentPane().add(textFieldZ);
+	}
+
+	private void agregarTemperatura() {
+		labelt = new JLabel("Temperatura");
+		labelt.setHorizontalAlignment(SwingConstants.CENTER);
+		labelt.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		labelt.setBackground(Color.WHITE);
+		labelt.setBounds(325, 11, 99, 36);
+		getContentPane().add(labelt);
+		
+		labelTemperatura = new JLabel("");
+		labelTemperatura.setHorizontalAlignment(SwingConstants.CENTER);
+		labelTemperatura.setFont(new Font("Tahoma", Font.BOLD, 16));
+		labelTemperatura.setBackground(Color.WHITE);
+		labelTemperatura.setBounds(325, 58, 99, 36);
+		getContentPane().add(labelTemperatura);
+		
+		progressBarTemperatura = new JProgressBar(0, MAXIMO_TEMPERATURA);
+		progressBarTemperatura.setValue(0);
+		progressBarTemperatura.setBounds(335, 105, 89, 14);
+		getContentPane().add(progressBarTemperatura);
+	}
+
+	private void agregarInclinacion() {
 		JLabel labelInc = new JLabel("Inclinaci\u00F3n Norte");
 		labelInc.setHorizontalAlignment(SwingConstants.CENTER);
 		labelInc.setFont(new Font("Tahoma", Font.PLAIN, 12));
@@ -87,62 +135,30 @@ public class VentanaPrincipal extends JFrame {
 		labelNorte.setFont(new Font("Tahoma", Font.PLAIN, 13));
 		labelNorte.setBounds(40, 145, 31, 26);
 		getContentPane().add(labelNorte);
-		
-		labelt = new JLabel("Temperatura");
-		labelt.setHorizontalAlignment(SwingConstants.CENTER);
-		labelt.setFont(new Font("Tahoma", Font.PLAIN, 14));
-		labelt.setBackground(Color.WHITE);
-		labelt.setBounds(325, 11, 99, 36);
-		getContentPane().add(labelt);
-		
-		labelTemperatura = new JLabel("");
-		labelTemperatura.setHorizontalAlignment(SwingConstants.CENTER);
-		labelTemperatura.setFont(new Font("Tahoma", Font.BOLD, 16));
-		labelTemperatura.setBackground(Color.WHITE);
-		labelTemperatura.setBounds(325, 58, 99, 36);
-		getContentPane().add(labelTemperatura);
-		
-		progressBarTemperatura = new JProgressBar(0, MAXIMO_TEMPERATURA);
-		progressBarTemperatura.setValue(0);
-		progressBarTemperatura.setBounds(335, 105, 89, 14);
-		getContentPane().add(progressBarTemperatura);
-		
-		textFieldX = new JTextField();
-		textFieldX.setText("0");
-		textFieldX.setHorizontalAlignment(SwingConstants.CENTER);
-		textFieldX.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		textFieldX.setColumns(10);
-		textFieldX.setBounds(131, 192, 83, 36);
-		getContentPane().add(textFieldX);
-		
-		textFieldY = new JTextField();
-		textFieldY.setText("0");
-		textFieldY.setHorizontalAlignment(SwingConstants.CENTER);
-		textFieldY.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		textFieldY.setColumns(10);
-		textFieldY.setBounds(232, 192, 83, 36);
-		getContentPane().add(textFieldY);
-		
-		textFieldZ = new JTextField();
-		textFieldZ.setText("0");
-		textFieldZ.setHorizontalAlignment(SwingConstants.CENTER);
-		textFieldZ.setFont(new Font("Tahoma", Font.PLAIN, 13));
-		textFieldZ.setColumns(10);
-		textFieldZ.setBounds(335, 192, 83, 36);
-		getContentPane().add(textFieldZ);
-		
-		tomarMedidas();
 	}
 
-	private void tomarMedidas() {
+	private void agregarBrujula() {
+		JLabel brujula = new JLabel("Br\u00FAjula");
+		brujula.setBackground(Color.WHITE);
+		brujula.setHorizontalAlignment(SwingConstants.CENTER);
+		brujula.setFont(new Font("Tahoma", Font.PLAIN, 14));
+		brujula.setBounds(10, 11, 99, 36);
+		getContentPane().add(brujula);
+		
+		labelBrujula = new JLabel("");
+		labelBrujula.setHorizontalAlignment(SwingConstants.CENTER);
+		labelBrujula.setFont(new Font("Tahoma", Font.BOLD, 16));
+		labelBrujula.setBackground(Color.WHITE);
+		labelBrujula.setBounds(10, 58, 99, 36);
+		getContentPane().add(labelBrujula);
+	}
 
+	private void procesarSensores() {
 		SwingWorker<Void, Void> mySwingWorker = new SwingWorker<Void, Void>(){
 	         @Override
 	         protected Void doInBackground() throws Exception {
-
-	        	Medidor medidor = new Medidor(VentanaPrincipal.this);
-	        	medidor.iniciar();
-				
+	        	new ArduinoFactory().crear(VentanaPrincipal.this);
+	        	
 				return null;
 	         }
 	      };

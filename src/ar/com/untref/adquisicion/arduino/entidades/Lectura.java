@@ -3,7 +3,6 @@ package ar.com.untref.adquisicion.arduino.entidades;
 public class Lectura {
 
 	// 257.36|2|0|2292|8694|95.332|1|2|-5888
-
 	private Double inclinacion = 0.0;
 	private Integer error = 0;
 	private Double aceleracionX = 0.0;
