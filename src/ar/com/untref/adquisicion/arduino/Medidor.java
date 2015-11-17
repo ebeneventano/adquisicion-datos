@@ -28,7 +28,7 @@ public class Medidor implements SerialPortEventListener {
 	private Double MARGEN_ERROR_INCLINACION = 3.0;
 	private Double MARGEN_ERROR_TEMPERATURA = 1.0;
 
-	private final Double SEGUNDOS_ENTRE_MEDICIONES = 0.5;
+	private final Double SEGUNDOS_ENTRE_MEDICIONES = 0.1;
 
 	private Double MARGEN_ERROR_ACELERACION_X;
 	private Double MARGEN_ERROR_ACELERACION_Y;
@@ -44,6 +44,8 @@ public class Medidor implements SerialPortEventListener {
 	private List<Double> valoresDeCalibracionAceleracionY = new ArrayList<Double>();
 	private List<Double> valoresDeCalibracionAceleracionZ = new ArrayList<Double>();
 
+	private List<Double> listaDeLecturas = new ArrayList<Double>();
+	
 	private boolean estaCalibrado = false;
 
 	private Medicion medicionAnterior;
@@ -161,8 +163,9 @@ public class Medidor implements SerialPortEventListener {
 		Lectura lecturaActual = new Lectura(inclinacion, error, aceleracionX,
 				aceleracionY, aceleracionZ, temperatura, giroX, giroY, giroZ);
 
-//		System.out.println(lecturaActual);
-
+//		System.out.println("Acel X: " + lecturaActual.getAceleracionX() + "    Acel Y: " + lecturaActual.getAceleracionY() +
+//				"   Acel Z: " + lecturaActual.getAceleracionZ());
+		
 		if ( lecturaActual.getError() == 0 ){
 			
 			if (valoresDeCalibracionAceleracionX.size() <= 20) {
@@ -201,12 +204,12 @@ public class Medidor implements SerialPortEventListener {
 						.get(19) - (MARGEN_ERROR_ACELERACION_Z / 2);
 
 				estaCalibrado = true;
-
-				System.err.println("Fin del proceso de calibracion");
-				System.err.println("Error X " + MARGEN_ERROR_ACELERACION_X);
-				System.err.println("Valor X " + VALOR_ACELERACION_X_EN_REPOSO);
-				System.err.println("Error Y " + MARGEN_ERROR_ACELERACION_Y);
-				System.err.println("Valor Y " + VALOR_ACELERACION_Y_EN_REPOSO);
+//
+//				System.err.println("Fin del proceso de calibracion");
+//				System.err.println("Error X " + MARGEN_ERROR_ACELERACION_X);
+//				System.err.println("Valor X " + VALOR_ACELERACION_X_EN_REPOSO);
+//				System.err.println("Error Y " + MARGEN_ERROR_ACELERACION_Y);
+//				System.err.println("Valor Y " + VALOR_ACELERACION_Y_EN_REPOSO);
 			}
 
 			if (Math.abs(inclinacion - lecturaAnterior.getInclinacion()) < MARGEN_ERROR_INCLINACION) {
@@ -239,10 +242,21 @@ public class Medidor implements SerialPortEventListener {
 
 			if (estaCalibrado) {
 				
-				if(bufferLecturas.size() < 5){
-					bufferLecturas.add(lecturaActual);
-				} else {
-					lecturaActual = obtenerLecturaEficaz();
+				System.out.println("Move it");
+//				if(bufferLecturas.size() < 5){
+//					bufferLecturas.add(lecturaActual);
+//				} else {
+//					lecturaActual = obtenerLecturaEficaz();
+					
+				listaDeLecturas.add(lecturaActual.getAceleracionY());
+				
+				if (listaDeLecturas.size() == 50) {
+					
+					for (Double lect: listaDeLecturas){
+						
+						System.out.println(lect.toString());
+					}
+				}
 				
 					Medicion medicionActual = obtenerMedicion(lecturaActual);
 					
@@ -250,32 +264,19 @@ public class Medidor implements SerialPortEventListener {
 					ventanaPrincipal.actualizarDatosTemperatura(lecturaActual
 							.getTemperatura());
 					ventanaPrincipal.actualizarDatosPosicion(medicionActual.getPosicion());
-	
+//	
 					lecturaAnterior = lecturaActual;
 					medicionAnterior = medicionActual;
-	
-					bufferLecturas.clear();
+//	
+//					bufferLecturas.clear();
 				}
 			}
-		}
+//		}
 		
-	}
-
-	private Lectura obtenerLecturaEficaz() {
-		Collections.sort(bufferLecturas, new AceleracionXComparator());
-		Lectura lecturaEficaz = bufferLecturas.get(2);
-		
-		Collections.sort(bufferLecturas, new AceleracionYComparator());
-		lecturaEficaz.setAceleracionY(bufferLecturas.get(2).getAceleracionY());
-		
-		Collections.sort(bufferLecturas, new AceleracionZComparator());
-		lecturaEficaz.setAceleracionZ(bufferLecturas.get(2).getAceleracionZ());
-		
-		return lecturaEficaz;
 	}
 
 	private double obtenerAceleracionReal(String parametro) {
-		return new Double(parametro) / 16384;
+		return new Double(parametro);
 	}
 
 	public void iniciar() throws Exception {
@@ -311,6 +312,7 @@ public class Medidor implements SerialPortEventListener {
 	private Medicion calcularMedicion(Medicion medicionAnterior,
 			Lectura lecturaActual) {
 
+		
 		// Estado de reposo
 		Double velocidadAnteriorX = medicionAnterior.getVelocidad().getX();
 		Double posicionAnteriorX = medicionAnterior.getPosicion().getX();
@@ -336,59 +338,50 @@ public class Medidor implements SerialPortEventListener {
 
 		if (Math.abs(lecturaActual.getAceleracionX()
 				- VALOR_ACELERACION_X_EN_REPOSO) > MARGEN_ERROR_ACELERACION_X 
-				|| Math.abs(aceleracionAnteriorX
-						- VALOR_ACELERACION_X_EN_REPOSO) > MARGEN_ERROR_ACELERACION_X ) {
+				&& Math.abs(lecturaActual.getAceleracionX()) >= 2800 ) {
 
-			velocidadActualX = velocidadAnteriorX
-					+ lecturaActual.getAceleracionX() * 1000
-					* SEGUNDOS_ENTRE_MEDICIONES;
+			velocidadActualX = aceleracionAnteriorX * SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES * 1000
+					/ 16384;
 			posicionActualX = posicionAnteriorX + velocidadActualX
-					* SEGUNDOS_ENTRE_MEDICIONES
-					+ (lecturaActual.getAceleracionX() / 2)
+					+ (lecturaActual.getAceleracionX() * 1000 / 16348 / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
 
-			System.out.println("velocidad X: " + velocidadActualX);
-			System.out.println("aceleracion X: "
-					+ lecturaActual.getAceleracionX());
-			System.out.println("pos actual X: " + posicionActualX);
+//			System.err.println("velocidad X: " + velocidadActualX);
+//			System.out.println("aceleracion X: "
+//					+ lecturaActual.getAceleracionX());
+//			System.out.println("pos actual X: " + posicionActualX);
 		}
 
 		if (Math.abs(lecturaActual.getAceleracionY()
 				- VALOR_ACELERACION_Y_EN_REPOSO) > MARGEN_ERROR_ACELERACION_Y
-				|| Math.abs(aceleracionAnteriorY
-						- VALOR_ACELERACION_Y_EN_REPOSO) > MARGEN_ERROR_ACELERACION_Y ) {
+				&& Math.abs(lecturaActual.getAceleracionY()) >= 2800 ) {
 
-			velocidadActualY = velocidadAnteriorY
-					+ lecturaActual.getAceleracionY() * 1000
-					* SEGUNDOS_ENTRE_MEDICIONES;
+			velocidadActualY = aceleracionAnteriorY * SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES * 1000
+					/ 16384;
 			posicionActualY = posicionAnteriorY + velocidadActualY
-					* SEGUNDOS_ENTRE_MEDICIONES
-					+ (lecturaActual.getAceleracionY() / 2)
+					+ (lecturaActual.getAceleracionY() * 1000 / 16348 / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
 
-			System.out.println("velocidad Y: " + velocidadActualY);
-			System.out.println("aceleracion Y: "
-					+ lecturaActual.getAceleracionY());
-			System.out.println("pos actual Y: " + posicionActualY);
+//			System.err.println("velocidad Y: " + velocidadActualY);
+//			System.out.println("aceleracion Y: "
+//					+ lecturaActual.getAceleracionY());
+//			System.out.println("pos actual Y: " + posicionActualY);
 		}
 
 		if (Math.abs(lecturaActual.getAceleracionZ()
 				- VALOR_ACELERACION_Z_EN_REPOSO) > MARGEN_ERROR_ACELERACION_Z
-				|| Math.abs(aceleracionAnteriorZ
-						- VALOR_ACELERACION_Z_EN_REPOSO) > MARGEN_ERROR_ACELERACION_Z ) {
+				&& Math.abs(lecturaActual.getAceleracionZ()) >= 2800 ) {
 
-			velocidadActualZ = velocidadAnteriorZ
-					+ lecturaActual.getAceleracionZ() * 1000
-					* SEGUNDOS_ENTRE_MEDICIONES;
+			velocidadActualZ = aceleracionAnteriorZ * SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES * 1000
+					/ 16384;
 			posicionActualZ = posicionAnteriorZ + velocidadActualZ
-					* SEGUNDOS_ENTRE_MEDICIONES
-					+ (lecturaActual.getAceleracionZ() / 2)
+					+ (lecturaActual.getAceleracionZ() * 1000 / 16348 / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
-
-			System.out.println("velocidad Z: " + velocidadActualZ);
-			System.out.println("aceleracion Z: "
-					+ lecturaActual.getAceleracionZ());
-			System.out.println("pos actual Z: " + posicionActualZ);
+//
+//			System.err.println("velocidad Z: " + velocidadActualZ);
+//			System.out.println("aceleracion Z: "
+//					+ lecturaActual.getAceleracionZ());
+//			System.out.println("pos actual Z: " + posicionActualZ);
 		}
 
 		Punto3D posicionActual = new Punto3D(posicionActualX, posicionActualY,
@@ -398,6 +391,8 @@ public class Medidor implements SerialPortEventListener {
 		Punto3D aceleracionActual = new Punto3D(lecturaActual.getAceleracionX(),
 				lecturaActual.getAceleracionY(), lecturaActual.getAceleracionZ());
 
+//		System.err.println("velocidad X: " + velocidadActualX + "   velocidad Y: " + velocidadActualY + "   velocidad Z: " + velocidadActualZ);
+		
 		return new Medicion(posicionActual, velocidadActual, aceleracionActual);
 	}
 	
@@ -424,4 +419,17 @@ public class AceleracionZComparator implements Comparator<Lectura> {
 	}
 	
 }
+
+	private Lectura obtenerLecturaEficaz() {
+		Collections.sort(bufferLecturas, new AceleracionXComparator());
+		Lectura lecturaEficaz = bufferLecturas.get(2);
+		
+		Collections.sort(bufferLecturas, new AceleracionYComparator());
+		lecturaEficaz.setAceleracionY(bufferLecturas.get(2).getAceleracionY());
+		
+		Collections.sort(bufferLecturas, new AceleracionZComparator());
+		lecturaEficaz.setAceleracionZ(bufferLecturas.get(2).getAceleracionZ());
+		
+		return lecturaEficaz;
+	}
 }
