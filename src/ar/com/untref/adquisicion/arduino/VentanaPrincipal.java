@@ -33,7 +33,6 @@ public class VentanaPrincipal extends JFrame {
 
 	public VentanaPrincipal() {
 		setVisible(Boolean.TRUE);
-		setExtendedState(getExtendedState() | JFrame.MAXIMIZED_BOTH);
 		
 		getContentPane().setLayout(null);
 		setTitle(TITULO);
@@ -47,6 +46,8 @@ public class VentanaPrincipal extends JFrame {
 		this.agregarMovimiento();
 		
 		this.procesarSensores();
+
+		setExtendedState(getExtendedState() | JFrame.MAXIMIZED_BOTH);
 	}
 
 	private void agregarMovimiento() {

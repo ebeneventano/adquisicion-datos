@@ -225,6 +225,7 @@ public class Arduino implements SerialPortEventListener {
 
 			velocidadActualX = aceleracionAnteriorX * SEGUNDOS_ENTRE_MEDICIONES
 					* SEGUNDOS_ENTRE_MEDICIONES * 1000 / 16384;
+			
 			posicionActualX = posicionAnteriorX + velocidadActualX
 					+ (lecturaActual.getAceleracionX() * 1000 / 16348 / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
@@ -237,6 +238,7 @@ public class Arduino implements SerialPortEventListener {
 
 			velocidadActualY = aceleracionAnteriorY * SEGUNDOS_ENTRE_MEDICIONES
 					* SEGUNDOS_ENTRE_MEDICIONES * 1000 / 16384;
+			
 			posicionActualY = posicionAnteriorY + velocidadActualY
 					+ (lecturaActual.getAceleracionY() * 1000 / 16348 / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
@@ -249,6 +251,7 @@ public class Arduino implements SerialPortEventListener {
 
 			velocidadActualZ = aceleracionAnteriorZ * SEGUNDOS_ENTRE_MEDICIONES
 					* SEGUNDOS_ENTRE_MEDICIONES * 1000 / 16384;
+			
 			posicionActualZ = posicionAnteriorZ + velocidadActualZ
 					+ (lecturaActual.getAceleracionZ() * 1000 / 16348 / 2)
 					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
