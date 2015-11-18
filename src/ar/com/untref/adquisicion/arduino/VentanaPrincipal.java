@@ -51,6 +51,13 @@ public class VentanaPrincipal extends JFrame {
 	}
 
 	private void agregarMovimiento() {
+		JLabel labelInc = new JLabel("Distancia X");
+		labelInc.setHorizontalAlignment(SwingConstants.CENTER);
+		labelInc.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		labelInc.setBackground(Color.WHITE);
+		labelInc.setBounds(131, 152, 83, 36);
+		getContentPane().add(labelInc);
+		
 		textFieldX = new JTextField();
 		textFieldX.setText("0");
 		textFieldX.setHorizontalAlignment(SwingConstants.CENTER);
@@ -59,6 +66,13 @@ public class VentanaPrincipal extends JFrame {
 		textFieldX.setBounds(131, 192, 83, 36);
 		getContentPane().add(textFieldX);
 		
+		JLabel labelDistanciaY = new JLabel("Distancia Y");
+		labelDistanciaY.setHorizontalAlignment(SwingConstants.CENTER);
+		labelDistanciaY.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		labelDistanciaY.setBackground(Color.WHITE);
+		labelDistanciaY.setBounds(232, 152, 83, 36);
+		getContentPane().add(labelDistanciaY);
+		
 		textFieldY = new JTextField();
 		textFieldY.setText("0");
 		textFieldY.setHorizontalAlignment(SwingConstants.CENTER);
@@ -66,6 +80,13 @@ public class VentanaPrincipal extends JFrame {
 		textFieldY.setColumns(10);
 		textFieldY.setBounds(232, 192, 83, 36);
 		getContentPane().add(textFieldY);
+		
+		JLabel labelDistanciaZ = new JLabel("Distancia Z");
+		labelDistanciaZ.setHorizontalAlignment(SwingConstants.CENTER);
+		labelDistanciaZ.setFont(new Font("Tahoma", Font.PLAIN, 12));
+		labelDistanciaZ.setBackground(Color.WHITE);
+		labelDistanciaZ.setBounds(335, 152, 83, 36);
+		getContentPane().add(labelDistanciaZ);
 		
 		textFieldZ = new JTextField();
 		textFieldZ.setText("0");
