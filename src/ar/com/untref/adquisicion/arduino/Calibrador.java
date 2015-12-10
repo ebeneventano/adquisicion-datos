@@ -28,7 +28,7 @@ public class Calibrador {
 
 	public Boolean calibrar(Lectura lecturaActual) {
 		
-		if (valoresDeCalibracionAceleracionX.size() <= 20) {
+		if (valoresDeCalibracionAceleracionX.size() <= 20 && lecturaActual.getError().equals(0)) {
 			valoresDeCalibracionAceleracionX.add(lecturaActual
 					.getAceleracionX());
 			valoresDeCalibracionAceleracionY.add(lecturaActual
@@ -47,13 +47,13 @@ public class Calibrador {
 			
 			setMargenErrorAceleracionX(Math
 					.abs(valoresDeCalibracionAceleracionX.get(0)
-							- valoresDeCalibracionAceleracionX.get(19)));
+							- valoresDeCalibracionAceleracionX.get(19)) * 2);
 			setMargenErrorAceleracionY(Math
 					.abs(valoresDeCalibracionAceleracionY.get(0)
-							- valoresDeCalibracionAceleracionY.get(19)));
+							- valoresDeCalibracionAceleracionY.get(19)) * 2);
 			setMargenErrorAceleracionZ(Math
 					.abs(valoresDeCalibracionAceleracionZ.get(0)
-							- valoresDeCalibracionAceleracionZ.get(19)));
+							- valoresDeCalibracionAceleracionZ.get(19)) * 2);
 			
 			setValorAcelaracionXReposo(valoresDeCalibracionAceleracionX
 					.get(19) - (getMargenErrorAceleracionX() / 2));
@@ -63,7 +63,17 @@ public class Calibrador {
 					.get(19) - (getMargenErrorAceleracionZ() / 2));
 			
 			calibrado = Boolean.TRUE;
+			System.out.println("Margen de error de aceleración en eje X = " + this.margenErrorAceleracionX);
+			System.out.println("Margen de error de aceleración en eje Y = " + this.margenErrorAceleracionY);
+			System.out.println("Margen de error de aceleración en eje Z = " + this.margenErrorAceleracionZ);
+			
+			System.out.println("Aceleración de reposo en eje X = " + this.valorAcelaracionXReposo);
+			System.out.println("Aceleración de reposo en eje Y = " + this.valorAceleracionYReposo);
+			System.out.println("Aceleración de reposo en eje Z = " + this.valorAceleracionZReposo);
+			
+			System.out.println("Fin del calibrado");
 		}
+		
 		
 		return calibrado;
 	}
