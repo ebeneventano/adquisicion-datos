@@ -17,13 +17,14 @@ import javax.comm.SerialPortEventListener;
 import ar.com.untref.adquisicion.arduino.entidades.Lectura;
 import ar.com.untref.adquisicion.arduino.entidades.Medicion;
 import ar.com.untref.adquisicion.arduino.entidades.Punto3D;
+import ar.com.untref.adquisicion.arduino.utils.KalmanFilter;
 import ar.com.untref.adquisicion.excepcion.LecturaErroneaException;
 
 public class Arduino implements SerialPortEventListener {
 
 	private SerialPort serialPort;
 
-	private static final String PORT_NAMES[] = { "COM13", // Windows
+	private static final String PORT_NAMES[] = { "COM3", // Windows
 	};
 
 	private Double MARGEN_ERROR_INCLINACION = 3.0;
@@ -32,8 +33,6 @@ public class Arduino implements SerialPortEventListener {
 	private final Double SEGUNDOS_ENTRE_MEDICIONES = 0.1;
 
 	private Lectura lecturaAnterior = new Lectura();
-
-	private List<Double> listaDeLecturas = new ArrayList<Double>();
 
 	private Medicion medicionAnterior;
 
@@ -46,7 +45,10 @@ public class Arduino implements SerialPortEventListener {
 
 	private List<Lectura> bufferLecturas = new ArrayList<Lectura>();
 	private Calibrador calibrador;
-
+	
+	private List<Double> aceleracionesSinKalman = new ArrayList<>();
+	private List<Double> aceleracionesConKalman = new ArrayList<>();
+	
 	public Arduino(VentanaPrincipal ventanaPrincipal) {
 		this.ventanaPrincipal = ventanaPrincipal;
 		inicializar();
@@ -142,14 +144,6 @@ public class Arduino implements SerialPortEventListener {
 			this.setearTemperatura(lecturaActual);
 			
 			if (calibrado) {
-				listaDeLecturas.add(lecturaActual.getAceleracionY());
-				
-				if (listaDeLecturas.size() == 50) {
-					for (Double lect : listaDeLecturas) {
-						System.out.println(lect.toString());
-					}
-				}
-				
 				Medicion medicionActual = obtenerMedicion(lecturaActual);
 				
 				ventanaPrincipal.actualizarDatosBrujula(lecturaActual
@@ -197,13 +191,8 @@ public class Arduino implements SerialPortEventListener {
 	private Medicion calcularMedicion(Medicion medicionAnterior,
 			Lectura lecturaActual) {
 
-		Double velocidadAnteriorX = medicionAnterior.getVelocidad().getX();
 		Double posicionAnteriorX = medicionAnterior.getPosicion().getX();
-
-		Double velocidadAnteriorY = medicionAnterior.getVelocidad().getY();
 		Double posicionAnteriorY = medicionAnterior.getPosicion().getY();
-
-		Double velocidadAnteriorZ = medicionAnterior.getVelocidad().getZ();
 		Double posicionAnteriorZ = medicionAnterior.getPosicion().getZ();
 
 		Double posicionActualX = posicionAnteriorX;
@@ -214,7 +203,7 @@ public class Arduino implements SerialPortEventListener {
 
 		Double posicionActualZ = posicionAnteriorZ;
 		Double velocidadActualZ = 0D;
-
+		
 		Double aceleracionAnteriorX = medicionAnterior.getAceleracion().getX();
 		Double aceleracionAnteriorY = medicionAnterior.getAceleracion().getY();
 		Double aceleracionAnteriorZ = medicionAnterior.getAceleracion().getZ();
@@ -223,6 +212,20 @@ public class Arduino implements SerialPortEventListener {
 				- this.calibrador.getValorAcelaracionXReposo()) > this.calibrador.getMargenErrorAceleracionX()
 				&& Math.abs(lecturaActual.getAceleracionX()) >= 2800) {
 
+			Double aceleracionXKalmanizada = calibrador.getFilter().aplicarKalman(lecturaActual);
+			aceleracionesSinKalman.add(lecturaActual.getAceleracionX());
+			aceleracionesConKalman.add(aceleracionXKalmanizada);
+			
+			if (aceleracionesConKalman.size() == 20) {
+				for (Double unaImpresion: aceleracionesConKalman) {
+					System.out.println(unaImpresion);
+				}
+				System.out.println("----Separador----");
+				for (Double unaImpresion: aceleracionesSinKalman) {
+					System.out.println(unaImpresion);
+				}
+			}
+			
 			velocidadActualX = aceleracionAnteriorX * SEGUNDOS_ENTRE_MEDICIONES
 					* SEGUNDOS_ENTRE_MEDICIONES * 1000 / 16384;
 			
