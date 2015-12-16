@@ -2,7 +2,6 @@ package ar.com.untref.adquisicion.arduino;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,10 +16,11 @@ import javax.comm.SerialPortEventListener;
 import ar.com.untref.adquisicion.arduino.entidades.Lectura;
 import ar.com.untref.adquisicion.arduino.entidades.Medicion;
 import ar.com.untref.adquisicion.arduino.entidades.Punto3D;
-import ar.com.untref.adquisicion.arduino.utils.KalmanFilter;
 import ar.com.untref.adquisicion.excepcion.LecturaErroneaException;
 
 public class Arduino implements SerialPortEventListener {
+
+	private static final double AUTO_CORRECT_ERROR = 2.5;
 
 	private SerialPort serialPort;
 
@@ -37,7 +37,7 @@ public class Arduino implements SerialPortEventListener {
 	private Medicion medicionAnterior;
 
 	private BufferedReader input;
-	private OutputStream output;
+	
 	private VentanaPrincipal ventanaPrincipal;
 
 	private static final int TIME_OUT = 2000;
@@ -88,7 +88,6 @@ public class Arduino implements SerialPortEventListener {
 
 			input = new BufferedReader(new InputStreamReader(
 					serialPort.getInputStream()));
-			output = serialPort.getOutputStream();
 
 			serialPort.addEventListener(this);
 			serialPort.notifyOnDataAvailable(true);
@@ -98,6 +97,7 @@ public class Arduino implements SerialPortEventListener {
 	}
 
 	private CommPortIdentifier obtenerPortId() {
+		@SuppressWarnings("rawtypes")
 		Enumeration portEnum = CommPortIdentifier.getPortIdentifiers();
 		CommPortIdentifier portId = null;
 		while (portEnum.hasMoreElements()) {
@@ -188,9 +188,7 @@ public class Arduino implements SerialPortEventListener {
 		return medicionActual;
 	}
 
-	private Medicion calcularMedicion(Medicion medicionAnterior,
-			Lectura lecturaActual) {
-
+	private Medicion calcularMedicion(Medicion medicionAnterior, Lectura lecturaActual) {
 		Double posicionAnteriorX = medicionAnterior.getPosicion().getX();
 		Double posicionAnteriorY = medicionAnterior.getPosicion().getY();
 		Double posicionAnteriorZ = medicionAnterior.getPosicion().getZ();
@@ -207,10 +205,11 @@ public class Arduino implements SerialPortEventListener {
 		Double aceleracionAnteriorX = medicionAnterior.getAceleracion().getX();
 		Double aceleracionAnteriorY = medicionAnterior.getAceleracion().getY();
 		Double aceleracionAnteriorZ = medicionAnterior.getAceleracion().getZ();
+		
+		lecturaActual.setAceleracionX(Math.abs(lecturaActual.getAceleracionX()));
 
-		if (Math.abs(lecturaActual.getAceleracionX()
-				- this.calibrador.getValorAcelaracionXReposo()) > this.calibrador.getMargenErrorAceleracionX()
-				&& Math.abs(lecturaActual.getAceleracionX()) >= 2800) {
+		if (Math.abs(lecturaActual.getAceleracionX() - this.calibrador.getValorAcelaracionXReposo()) > 
+					this.calibrador.getMargenErrorAceleracionX()) {
 
 			Double aceleracionXKalmanizada = calibrador.getFilter().aplicarKalman(lecturaActual);
 			aceleracionesSinKalman.add(lecturaActual.getAceleracionX());
@@ -225,19 +224,20 @@ public class Arduino implements SerialPortEventListener {
 					System.out.println(unaImpresion);
 				}
 			}
+			aceleracionAnteriorX = Math.abs(aceleracionAnteriorX);
 			
 			velocidadActualX = aceleracionAnteriorX * SEGUNDOS_ENTRE_MEDICIONES
 					* SEGUNDOS_ENTRE_MEDICIONES * 1000 / 16384;
 			
 			posicionActualX = posicionAnteriorX + velocidadActualX
 					+ (lecturaActual.getAceleracionX() * 1000 / 16348 / 2)
-					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES);
-
+					* (SEGUNDOS_ENTRE_MEDICIONES * SEGUNDOS_ENTRE_MEDICIONES)
+					+ AUTO_CORRECT_ERROR;
+			
 		}
 
-		if (Math.abs(lecturaActual.getAceleracionY()
-				- this.calibrador.getValorAceleracionYReposo()) > this.calibrador.getMargenErrorAceleracionY()
-				&& Math.abs(lecturaActual.getAceleracionY()) >= 2800) {
+		if (Math.abs(lecturaActual.getAceleracionY() - this.calibrador.getValorAceleracionYReposo()) > 
+					this.calibrador.getMargenErrorAceleracionY()) {
 
 			velocidadActualY = aceleracionAnteriorY * SEGUNDOS_ENTRE_MEDICIONES
 					* SEGUNDOS_ENTRE_MEDICIONES * 1000 / 16384;
@@ -248,9 +248,8 @@ public class Arduino implements SerialPortEventListener {
 
 		}
 
-		if (Math.abs(lecturaActual.getAceleracionZ()
-				- this.calibrador.getValorAceleracionZReposo()) > this.calibrador.getMargenErrorAceleracionZ()
-				&& Math.abs(lecturaActual.getAceleracionZ()) >= 2800) {
+		if (Math.abs(lecturaActual.getAceleracionZ() - this.calibrador.getValorAceleracionZReposo()) > 
+				this.calibrador.getMargenErrorAceleracionZ()) {
 
 			velocidadActualZ = aceleracionAnteriorZ * SEGUNDOS_ENTRE_MEDICIONES
 					* SEGUNDOS_ENTRE_MEDICIONES * 1000 / 16384;

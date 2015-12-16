@@ -32,7 +32,7 @@ public class Calibrador {
 	public Boolean calibrar(Lectura lecturaActual) {
 		
 		if (getValoresDeCalibracionAceleracionX().size() <= 20) {
-			getValoresDeCalibracionAceleracionX().add(lecturaActual
+			valoresDeCalibracionAceleracionX.add(lecturaActual
 					.getAceleracionX());
 			valoresDeCalibracionAceleracionY.add(lecturaActual
 					.getAceleracionY());
@@ -49,14 +49,14 @@ public class Calibrador {
 			Collections.sort(valoresDeCalibracionAceleracionZ);
 			
 			setMargenErrorAceleracionX(Math
-					.abs(getValoresDeCalibracionAceleracionX().get(0)
-							- getValoresDeCalibracionAceleracionX().get(19)));
+					.abs(valoresDeCalibracionAceleracionX.get(0)
+							- valoresDeCalibracionAceleracionX.get(19)) * 2);
 			setMargenErrorAceleracionY(Math
 					.abs(valoresDeCalibracionAceleracionY.get(0)
-							- valoresDeCalibracionAceleracionY.get(19)));
+							- valoresDeCalibracionAceleracionY.get(19)) * 2);
 			setMargenErrorAceleracionZ(Math
 					.abs(valoresDeCalibracionAceleracionZ.get(0)
-							- valoresDeCalibracionAceleracionZ.get(19)));
+							- valoresDeCalibracionAceleracionZ.get(19)) * 2);
 			
 			setValorAcelaracionXReposo(getValoresDeCalibracionAceleracionX()
 					.get(19) - (getMargenErrorAceleracionX() / 2));
@@ -70,7 +70,17 @@ public class Calibrador {
 			setFilter(new KalmanFilter(desviacionEstandar, 0.01));
 			
 			calibrado = Boolean.TRUE;
+			System.out.println("Margen de error de aceleración en eje X = " + this.margenErrorAceleracionX);
+			System.out.println("Margen de error de aceleración en eje Y = " + this.margenErrorAceleracionY);
+			System.out.println("Margen de error de aceleración en eje Z = " + this.margenErrorAceleracionZ);
+			
+			System.out.println("Aceleración de reposo en eje X = " + this.valorAcelaracionXReposo);
+			System.out.println("Aceleración de reposo en eje Y = " + this.valorAceleracionYReposo);
+			System.out.println("Aceleración de reposo en eje Z = " + this.valorAceleracionZReposo);
+			
+			System.out.println("Fin del calibrado");
 		}
+		
 		
 		return calibrado;
 	}
